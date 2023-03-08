@@ -60,7 +60,7 @@
             </el-row>
             <el-row v-for="(row, rowIndex) in item.options" :key="rowIndex">
               <el-col :span="8">
-                {{ item.title }}
+                {{ row }}
               </el-col>
               <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)">
                 <el-radio :label="i" v-model="item.npsValue[rowIndex]">&nbsp;</el-radio>
