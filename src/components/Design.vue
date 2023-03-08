@@ -527,4 +527,7 @@ export default {
 .nps_row {
   display: flex;
 }
+.nps_row >>> .el-radio__label {
+  display: none;
+}
 </style>

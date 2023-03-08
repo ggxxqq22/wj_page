@@ -54,7 +54,7 @@
               <el-col :span="8">
                 &nbsp;
               </el-col>
-              <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" style="margin-left: 2px;" class="nps_radio">
+              <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" class="nps_radio">
                 {{ lev }}
               </el-col>
             </el-row>
@@ -281,5 +281,12 @@ export default {
 }
 .nps_row {
   display: flex;
+
+}
+.nps_row + .nps_row {
+  margin-top: 10px;
+}
+.nps_row >>> .el-radio__label {
+  display: none;
 }
 </style>

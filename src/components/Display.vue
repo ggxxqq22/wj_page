@@ -334,4 +334,7 @@
 .nps_row + .nps_row {
   margin-top: 10px;
 }
+.nps_row >>> .el-radio__label {
+  display: none;
+}
 </style>
