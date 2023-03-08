@@ -54,16 +54,16 @@
               <el-col :span="8">
                 &nbsp;
               </el-col>
-              <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" style="margin-left: 2px;">
+              <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" style="margin-left: 2px;" class="nps_radio">
                 {{ lev }}
               </el-col>
             </el-row>
-            <el-row v-for="(row, rowIndex) in item.options" :key="rowIndex">
-              <el-col :span="8">
-                {{ row }}
+            <el-row v-for="(row, rowIndex) in item.options" :key="rowIndex" class="nps_row">
+              <el-col :span="8" class="nps_title">
+                {{ row.title }}
               </el-col>
-              <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)">
-                <el-radio :label="i" v-model="item.npsValue[rowIndex]">&nbsp;</el-radio>
+              <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" class="nps_radio">
+                <el-radio :label="i" v-model="item.npsValue[rowIndex]" class="nps_radio">&nbsp;</el-radio>
               </el-col>
             </el-row>
           </div>
@@ -313,5 +313,25 @@
 /*选中样式*/
 .chosen {
   border: solid 2px #3089dc !important;
+}
+.nps_title {
+  padding-right: 13px;
+}
+.nps_title {
+  padding-right: 15px !important;
+}
+.nps_radio {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100% !important;
+  line-height: 1;
+  align-self: center;
+}
+.nps_row {
+  display: flex;
+}
+.nps_row + .nps_row {
+  margin-top: 10px;
 }
 </style>
