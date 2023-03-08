@@ -26,9 +26,9 @@
           <el-tooltip class="item" effect="dark" content="分享问卷" placement="bottom">
             <el-button icon="el-icon-share" type="text"class="rightButton" @click="shareWj" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>
           </el-tooltip>
-          <el-tooltip class="item" effect="dark" content="添加到模板库" placement="bottom">
-            <el-button icon="el-icon-upload2" type="text" class="rightButton" @click="uploadTemplate" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>
-          </el-tooltip>
+          <!--<el-tooltip class="item" effect="dark" content="添加到模板库" placement="bottom">-->
+          <!--  <el-button icon="el-icon-upload2" type="text" class="rightButton" @click="uploadTemplate" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>-->
+          <!--</el-tooltip>-->
           <!--<el-tooltip class="item" effect="dark" content="添加模板库" placement="bottom">-->
             <!--<el-button icon="el-icon-upload" type="text"class="rightButton" @click="addTemp"></el-button>-->
           <!--</el-tooltip>-->
