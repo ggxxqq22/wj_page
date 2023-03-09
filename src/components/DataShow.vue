@@ -22,7 +22,8 @@
     <div v-if="detail.length == 0">暂时没有数据</div>
     <el-card class="question" v-for="(item, index) in detail">
       <div slot="header" class="clearfix title_header">
-        <span>{{ index + 1 + "." + item.title }}</span>
+        <span v-if="item.nowTitleIndex === 0">{{ index + 1 + "." + item.title }}</span>
+        <span v-if="item.nowTitleIndex === 1">{{ index + 1 + "." + item.title2 }}</span>
         <div>
           <span class="title_tip">{{ allType[item.type] }}</span>
           <span class="title_num">作答人数： {{item.cnt || 0}}</span>
@@ -30,7 +31,7 @@
       </div>
       <!--如果数据库中的问题类型为单项选择或者多项选择-->
       <!--则将数据库中的数据以表格、柱状图、饼状图、圆环图、条形图的方式进行展示-->
-      <div v-if="item.type == 'radio' || item.type == 'checkbox'">
+      <div v-if="(item.type == 'radio' || item.type == 'checkbox')&&!Array.isArray(item.result[0])">
         <el-table
           size="small"
           :data="item.result"
@@ -51,7 +52,6 @@
           ></el-table-column>
         </el-table>
         <br/>
-
         <el-button
           size="mini"
           type="primary"
@@ -81,6 +81,86 @@
           type="primary"
           plain
           @click.native="changeValue(index, 4)"
+        >条形图
+        </el-button
+        >
+        <el-button
+          size="mini"
+          type="primary"
+          plain
+          @click.native="changeValue(index, 0)"
+        >隐藏图表
+        </el-button
+        >
+
+        <div :id="'img' + index" class="img" v-show="visible[index] == 1"></div>
+        <div
+          :id="'bing' + index"
+          class="bing"
+          v-show="visible[index] == 2"
+        ></div>
+        <div
+          :id="'ring' + index"
+          class="ring"
+          v-show="visible[index] == 3"
+        ></div>
+        <div :id="'tz' + index" class="tz" v-show="visible[index] == 4"></div>
+      </div>
+      <div v-if="(item.type == 'radio' || item.type == 'checkbox')&&Array.isArray(item.result[0])">
+        <el-radio-group v-model="item.nowTitleIndex" class="title_btn_box">
+          <el-radio-button :label="0">{{ item.title }}</el-radio-button>
+          <el-radio-button :label="1">{{ item.title2 }}</el-radio-button>
+        </el-radio-group>
+        <el-table
+          size="small"
+          :data="item.result[item.nowTitleIndex]"
+          style="width: 100%"
+          stripe
+          class="table"
+        >
+          <el-table-column prop="option" label="选项"></el-table-column>
+          <el-table-column
+            prop="count"
+            label="数量"
+            width="180"
+          ></el-table-column>
+          <el-table-column
+            prop="percent"
+            label="占比"
+            width="180"
+          ></el-table-column>
+        </el-table>
+        <br/>
+
+        <el-button
+          size="mini"
+          type="primary"
+          plain
+          @click.native="changeValue(index, 1, item.nowTitleIndex)"
+        >柱状图
+        </el-button
+        >
+        <el-button
+          size="mini"
+          type="primary"
+          plain
+          @click.native="changeValue(index, 2, item.nowTitleIndex)"
+        >饼状图
+        </el-button
+        >
+        <el-button
+          size="mini"
+          type="primary"
+          plain
+          @click.native="changeValue(index, 3, item.nowTitleIndex)"
+        >圆环图
+        </el-button
+        >
+        <el-button
+          size="mini"
+          type="primary"
+          plain
+          @click.native="changeValue(index, 4, item.nowTitleIndex)"
         >条形图
         </el-button
         >
@@ -314,18 +394,18 @@ export default {
       this.getTableData();
     },
     //切换图表
-    changeValue(num, value) {
+    changeValue(num, value, flag) {
       this.$set(this.visible, num, value);
       console.log("num=" + num);
       console.log("value=" + value);
       if (value == 1) {
-        this.setImg(num);
+        this.setImg(num, flag);
       } else if (value == 2) {
-        this.setPar(num);
+        this.setPar(num, flag);
       } else if (value == 3) {
-        this.setRing(num);
+        this.setRing(num, flag);
       } else if (value == 4) {
-        this.setTz(num);
+        this.setTz(num, flag);
       }
     },
     //      请求后端数据
@@ -354,7 +434,7 @@ export default {
     },
 
     //柱状图
-    setImg(id) {
+    setImg(id, flag=-1) {
       console.log(id);
       console.log(this.detail[id].result);
       let myChart = echarts.init(document.getElementById("img" + id));
@@ -365,7 +445,7 @@ export default {
         },
         dataset: {
           dimensions: ["option", "count", "percent"],
-          source: this.detail[id].result
+          source: flag === -1 ? this.detail[id].result : this.detail[id].result[flag]
         },
         xAxis: {
           type: "category"
@@ -383,7 +463,7 @@ export default {
       myChart.setOption(option);
     },
     // 饼状图
-    setPar(id) {
+    setPar(id, flag=-1) {
       let myChart = echarts.init(document.getElementById("bing" + id));
       var option = {
         tooltip: {},
@@ -393,8 +473,8 @@ export default {
           data: ["数量"]
         },
         dataset: {
-          dimensions: ["option", "count", "percent"],
-          source: this.detail[id].result
+          source: flag === -1 ? this.detail[id].result : this.detail[id].result[flag],
+
         },
         series: [
           {
@@ -402,6 +482,11 @@ export default {
             type: "pie",
             radius: "55%",
             center: ["50%", "50%"],
+            encode: {
+              "itemName": "option",
+              "value": "count"
+            },
+            minShowLabelAngle: 1,
             itemStyle: {
               emphasis: {
                 shadowBlur: 10,
@@ -415,7 +500,7 @@ export default {
       myChart.setOption(option);
     },
     // 圆环图
-    setRing(id) {
+    setRing(id, flag=-1) {
       //console.log(id);
       let myChart = echarts.init(document.getElementById("ring" + id));
       var option = {
@@ -424,7 +509,7 @@ export default {
         color: ["#409EFF", "#FFB54D", "#FF7466", "#44DB5E"],
         dataset: {
           dimensions: ["option", "count", "percent"],
-          source: this.detail[id].result
+          source: flag === -1 ? this.detail[id].result : this.detail[id].result[flag]
         },
         series: [
           {
@@ -432,6 +517,11 @@ export default {
             type: "pie",
             radius: ["50%", "70%"],
             avoidLabelOverlap: false,
+            encode: {
+              "itemName": "option",
+              "value": "count"
+            },
+            minShowLabelAngle: 1,
             label: {
               normal: {
                 show: false,
@@ -455,8 +545,8 @@ export default {
       };
       myChart.setOption(option);
     },
-    //圆环图
-    setTz(id) {
+    //条状图
+    setTz(id, flag=-1) {
       //console.log(id);
       let myChart = echarts.init(document.getElementById("tz" + id));
       var option = {
@@ -468,7 +558,7 @@ export default {
         },
         dataset: {
           dimensions: ["option", "count", "percent"],
-          source: this.detail[id].result
+          source: flag === -1 ? this.detail[id].result : this.detail[id].result[flag]
         },
         grid: {
           left: "3%",
@@ -605,5 +695,19 @@ export default {
 .title_num {
   font-size: 12px;
   margin-left: 5px;
+}
+.title_btn_box {
+  margin-top: -10px;
+  width: 100%;
+}
+.title_btn_box >>> .el-radio-button {
+  width: 50%;
+}
+.title_btn_box >>> .el-radio-button__inner {
+  display: block;
+  width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 </style>

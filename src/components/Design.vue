@@ -8,72 +8,78 @@
     <div class="top" v-if="desc!=''">
       {{ desc }}
     </div>
-    <el-card class="box-card" v-for="(item,index) in detail" style="margin: 10px;" :key="index">
-      <div slot="header" class="clearfix" v-if="item.type !== 'page'">
-        <div class="questionTitle">
-          <!--显示必填标识-->
-          <span style="color: #F56C6C;">
+    <div class="card_container" v-for="(item,index) in detail" :key="index">
+      <el-button type="primary" icon="el-icon-arrow-up" circle plain class="card_up" @click="questionUp(item)" v-if="index !== 0"></el-button>
+      <el-button type="primary" icon="el-icon-arrow-down" circle plain class="card_down" @click="questionDown(item)" v-if="index !== detail.length - 1"></el-button>
+      <el-card class="box-card" style="margin: 10px;" >
+        <div slot="header" class="clearfix" v-if="item.type !== 'page'">
+          <div class="questionTitle">
+            <!--显示必填标识-->
+            <span style="color: #F56C6C;">
             <span v-if="item.must">*</span>
             <span v-else>&nbsp;</span>
           </span>
-          <span style="color: black;margin-right: 3px;">{{ (questionNum[index] + 1) + '.' }}</span>
-          {{ item.title }}
+            <span style="color: black;margin-right: 3px;">{{ (questionNum[index] + 1) + '.' }}</span>
+            {{ item.title }}
+          </div>
+          <div style="float: right;">
+            <el-button style="padding: 2px" type="text" @click="editorQuestion(item)" v-if="item.title !== 'divide'">编辑
+            </el-button>
+            <el-button style="padding: 2px;color: #F56C6C" type="text" @click="deleteQuestion(index)">删除</el-button>
+          </div>
         </div>
-        <div style="float: right;">
-          <el-button style="padding: 2px" type="text" @click="editorQuestion(item)" v-if="item.title !== 'divide'">编辑
-          </el-button>
+        <!--单选题展示-->
+        <div class="text item" v-if="item.type=='radio'" v-for="(option,index) in item.options" :key="index">
+          <el-radio v-model="item.radioValue" :label="index" style="margin: 5px;">{{ option.title }}</el-radio>
+        </div>
+        <!--排序题展示-->
+        <draggable v-model="item.rankValue"  chosenClass="chosen" forceFallback="true" animation="300">
+          <transition-group>
+            <div class="rank_item" v-for="(element,ind) in item.rankValue" :key="element.id">{{(ind+1) + '. ' + element.title}}</div>
+          </transition-group>
+        </draggable>
+        <!--分页展示-->
+        <div v-if="item.type === 'page'" class="page">
+          <span>分页线</span>
           <el-button style="padding: 2px;color: #F56C6C" type="text" @click="deleteQuestion(index)">删除</el-button>
         </div>
-      </div>
-      <!--单选题展示-->
-      <div class="text item" v-if="item.type=='radio'" v-for="(option,index) in item.options" :key="index">
-        <el-radio v-model="item.radioValue" :label="index" style="margin: 5px;">{{ option.title }}</el-radio>
-      </div>
-      <!--排序题展示-->
-      <draggable v-model="item.rankValue"  chosenClass="chosen" forceFallback="true" animation="300">
-        <transition-group>
-          <div class="rank_item" v-for="(element,ind) in item.rankValue" :key="element.id">{{(ind+1) + '. ' + element.title}}</div>
-        </transition-group>
-      </draggable>
-      <!--分页展示-->
-      <div v-if="item.type === 'page'" class="page">
-        <span>分页线</span>
-        <el-button style="padding: 2px;color: #F56C6C" type="text" @click="deleteQuestion(index)">删除</el-button>
-      </div>
-      <!--多选题展示-->
-      <el-checkbox-group v-if="item.type=='checkbox'" v-model="item.checkboxValue">
-        <div class="text item" v-for="(option,index) in item.options" :key="index">
-          <el-checkbox :label="index" style="margin: 5px;">{{ option.title }}</el-checkbox>
-        </div>
-      </el-checkbox-group>
-      <!--填空题展示-->
-      <el-input
-        v-if="item.type=='text'"
-        type="textarea"
-        :rows="item.row"
-        resize="none"
-        v-model="item.textValue">
-      </el-input>
-      <!--矩阵量表题展示-->
-      <template v-if="item.type === 'nps'">
-        <el-row>
-          <el-col :span="8">
-            &nbsp;
-          </el-col>
-          <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" class="nps_radio">
-            {{ lev }}
-          </el-col>
-        </el-row>
-        <el-row v-for="(row, rowIndex) in item.options" :key="rowIndex" class="nps_row">
-          <el-col :span="8" class="nps_title">
-            {{ row.title }}
-          </el-col>
-          <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" class="nps_radio">
-            <el-radio :label="i" v-model="item.npsValue[rowIndex]">&nbsp;</el-radio>
-          </el-col>
-        </el-row>
-      </template>
-    </el-card>
+        <!--多选题展示-->
+        <el-checkbox-group v-if="item.type=='checkbox'" v-model="item.checkboxValue">
+          <div class="text item" v-for="(option,index) in item.options" :key="index">
+            <el-checkbox :label="index" style="margin: 5px;">{{ option.title }}</el-checkbox>
+          </div>
+        </el-checkbox-group>
+        <!--填空题展示-->
+        <el-input
+          v-if="item.type=='text'"
+          type="textarea"
+          :rows="item.row"
+          resize="none"
+          v-model="item.textValue">
+        </el-input>
+        <!--矩阵量表题展示-->
+        <template v-if="item.type === 'nps'">
+          <el-row>
+            <el-col :span="8">
+              &nbsp;
+            </el-col>
+            <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" class="nps_radio">
+              {{ lev }}
+            </el-col>
+          </el-row>
+          <el-row v-for="(row, rowIndex) in item.options" :key="rowIndex" class="nps_row">
+            <el-col :span="8" class="nps_title">
+              {{ row.title }}
+            </el-col>
+            <el-col v-for="(lev, i) in item.level.split(',')" :key="i" :span="calcSpan(item.level)" class="nps_radio">
+              <el-radio :label="i" v-model="item.npsValue[rowIndex]">&nbsp;</el-radio>
+            </el-col>
+          </el-row>
+        </template>
+      </el-card>
+
+    </div>
+
     <el-button icon="el-icon-circle-plus" @click="addQuestion" style="margin-top: 10px;">添加题目</el-button>
     <el-button icon="el-icon-circle-plus" @click="addPage" style="margin-top: 10px;">添加分页</el-button>
     <br><br><br><br><br>
@@ -98,6 +104,12 @@
         <!--题目标题-->
         <el-form-item label="题目标题" style="width: 100%;">
           <el-input v-model="willAddQuestion.title" placeholder="请输入标题"></el-input>
+        </el-form-item>
+        <el-form-item label="多种标题" style="width: 100%;" v-if="willAddQuestion.type=='radio'||willAddQuestion.type=='checkbox'">
+          <el-checkbox v-model="willAddQuestion.is_title2">随机出现另一种标题，用于比较</el-checkbox>
+        </el-form-item>
+        <el-form-item label="题目标题2" style="width: 100%;" v-if="willAddQuestion.is_title2">
+          <el-input v-model="willAddQuestion.title2" placeholder="请输入另一种标题，将随机出现"></el-input>
         </el-form-item>
         <!--分类-->
         <template v-if="willAddQuestion.type=='radio'||willAddQuestion.type=='checkbox'">
@@ -191,6 +203,8 @@ export default {
         id: 0,
         type: '',
         title: '',
+        is_title2: false,
+        title2: '',
         options: [
           {
             title: '',//选项标题
@@ -199,6 +213,7 @@ export default {
         ],
         row: 1,
         must: true,//是否必填
+        index: 0
       },
       allType: [
         {
@@ -253,10 +268,6 @@ export default {
       })
         .then(data => {
           this.detail = data.detail;
-          console.log(this.questionNum)
-          console.log('---------')
-          console.log(this.detail)
-          console.log('---------')
           this.loading = false;
         })
     },
@@ -274,6 +285,8 @@ export default {
         id: 0,
         type: '',
         title: '',
+        title2: '',
+        is_title2: false,
         options: [
           {
             title: '',//选项标题
@@ -282,6 +295,7 @@ export default {
         ],
         row: 1,
         must: true,//是否必填，
+        index: this.detail.length
       };
       this.dialogShow = true;
     },
@@ -326,6 +340,7 @@ export default {
             options: [''],
             row: 1,
             must: false,
+            index: 0
           };
         });
     },
@@ -359,6 +374,52 @@ export default {
       });
 
     },
+    questionUp(item) {
+      designOpera({
+        opera_type: 'change_question_order',
+        username: 'test',
+        wjId: this.wjId,
+        questionId: item.id,
+        index: item.index,
+        operation: 'up'
+      }).then(data => {
+        if (data.code == 0) {
+          this.$message({
+            type: 'success',
+            message: '移动成功!'
+          });
+          this.getQuestionList();
+        } else {
+          this.$message({
+            type: 'error',
+            message: data.msg
+          });
+        }
+      })
+    },
+    questionDown(item) {
+      designOpera({
+        opera_type: 'change_question_order',
+        username: 'test',
+        wjId: this.wjId,
+        questionId: item.id,
+        index: item.index,
+        operation: 'down'
+      }).then(data => {
+        if (data.code == 0) {
+          this.$message({
+            type: 'success',
+            message: '移动成功!'
+          });
+          this.getQuestionList();
+        } else {
+          this.$message({
+            type: 'error',
+            message: data.msg
+          });
+        }
+      })
+    },
     //确认添加/保存题目
     checkAddQuestion() {
       //添加保存问题
@@ -368,14 +429,15 @@ export default {
         wjId: this.wjId,
         questionId: this.willAddQuestion.id,
         title: this.willAddQuestion.title,
+        title2: this.willAddQuestion.title2 || '',
         type: this.willAddQuestion.type,
         options: this.willAddQuestion.options,
         row: this.willAddQuestion.row,
         must: this.willAddQuestion.must,
-        level: this.willAddQuestion.level || ''
+        level: this.willAddQuestion.level || '',
+        index: this.willAddQuestion.index
       })
         .then(data => {
-          console.log(data);
           if (data.code == 0) {
             this.dialogShow = false;
             this.$message({
@@ -394,10 +456,13 @@ export default {
             id: 0,
             type: '',
             title: '',
+            title2: '',
+            is_title2: false,
             options: [''],
             row: 1,
             must: true,
-            level: '无'
+            level: '无',
+            index: 0
           };
         });
     },
@@ -411,6 +476,9 @@ export default {
       this.willAddQuestion.must = item.must;
       this.willAddQuestion.id = item.id;
       this.willAddQuestion.level = item.level;
+      this.willAddQuestion.index = item.index;
+      this.willAddQuestion.title2 = item.title2;
+      this.willAddQuestion.is_title2 = item.title2 === '' ? false : true
       this.dialogTitle = '编辑问题';
       this.dialogShow = true;
     },
@@ -472,7 +540,8 @@ export default {
 }
 
 .box-card {
-  width: 100%;
+  width: calc(95% - 40px);
+  position: relative;
   text-align: left;
 }
 
@@ -529,5 +598,21 @@ export default {
 }
 .nps_row >>> .el-radio__label {
   display: none;
+}
+.card_container {
+  position: relative;
+  width: 100%;
+}
+.card_up {
+  position: absolute;
+  top: 50%;
+  right: 0px;
+  transform: translateY(-58%);
+}
+.card_down {
+  position: absolute;
+  top: 50%;
+  right: 0px;
+  transform: translateY(58%);
 }
 </style>

@@ -12,7 +12,7 @@ module.exports = {
     proxyTable: {
       "/api": {
         // target: "https://www.wjcat.com",
-        target: "http://10.72.100.6:8000",
+        target: "http://127.0.0.1:8000",
         changeOrigin: true
       }
     },

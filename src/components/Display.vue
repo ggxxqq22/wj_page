@@ -193,8 +193,6 @@
               }
             }
             document.title=data.title;
-            console.log('--------')
-            console.log(this.detail)
           }
           else{
             this.$message({
